@@ -114,6 +114,7 @@ class Trilinos(CMakePackage, CudaPackage, ROCmPackage):
         multi=False,
         description="global ordinal type for Tpetra",
     )
+    variant("muelu_tests", default=False, description="Enable build of MueLu test")
     variant("openmp", default=False, description="Enable OpenMP")
     variant("python", default=False, when="@15:", description="Build PyTrilinos2 wrappers")
     variant("python", default=False, when="@:14", description="Build PyTrilinos wrappers")
@@ -131,6 +132,7 @@ class Trilinos(CMakePackage, CudaPackage, ROCmPackage):
     # TPLs (alphabet order)
     variant("adios2", default=False, description="Enable ADIOS2")
     variant("boost", default=False, description="Compile with Boost")
+    variant("cusparse", default=False, description="Enable cuSPARSE support")
     variant("hdf5", default=False, description="Compile with HDF5")
     variant("hypre", default=False, description="Compile with Hypre preconditioner")
     variant("mpi", default=True, description="Compile with MPI parallelism")
@@ -376,6 +378,8 @@ class Trilinos(CMakePackage, CudaPackage, ROCmPackage):
         msg="trilinos~wrapper+cuda can only be built with the Clang compiler",
     )
     conflicts("+cuda_rdc", when="~cuda")
+    conflicts("+cusparse", when="~cuda")
+    conflicts("+muelu_tests", when="~muelu")
     conflicts("+rocm_rdc", when="~rocm")
     conflicts("+wrapper", when="~cuda")
     conflicts("+wrapper", when="%clang")
@@ -708,6 +712,7 @@ class Trilinos(CMakePackage, CudaPackage, ROCmPackage):
             [
                 define("Trilinos_VERBOSE_CONFIGURE", False),
                 define_from_variant("BUILD_SHARED_LIBS", "shared"),
+                define_from_variant("MueLu_ENABLE_TESTS", "muelu_tests"),
                 define_trilinos_enable("ALL_OPTIONAL_PACKAGES", False),
                 define_trilinos_enable("ALL_PACKAGES", False),
                 define_trilinos_enable("CXX11", True),
@@ -905,6 +910,7 @@ class Trilinos(CMakePackage, CudaPackage, ROCmPackage):
             ("ADIOS2", "adios2", "adios2"),
             ("Boost", "boost", "boost"),
             ("CUDA", "cuda", "cuda"),
+            ("CUSPARSE", "cusparse", "cuda"),
             ("HDF5", "hdf5", "hdf5"),
             ("HYPRE", "hypre", "hypre"),
             ("MUMPS", "mumps", "mumps"),
